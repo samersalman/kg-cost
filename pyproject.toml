@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kg-cost"
+version = "0.1.0"
+description = "An open-source pipeline that assigns MS-DRGs to ICD-10-CM/PCS-coded encounters and estimates Medicare-allowed payments."
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Samer G. Salman"}]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "requests>=2.31",
+    "lxml>=5.1",
+    # pandas<3: the reproduced numbers were produced under pandas 2.x, and pandas 3 fails a dtype
+    # assertion in tests/test_ntdb_adapter.py (string columns are no longer object dtype).
+    "pandas>=2.2,<3",
+    "pyarrow>=15.0",
+    "duckdb>=1.0",
+    "openpyxl>=3.1",
+    "python-dateutil>=2.8",
+    # xlrd<2 is required by the HCPCS Level II extractor for pre-CY2014 era
+    # ZIPs that ship .xls binary workbooks (xlrd 2.x dropped .xls support).
+    # CY2020 specifically still ships .xls (HCPC2020_ANWEB_w_disclaimer.xls).
+    "xlrd<2",
+    # PyYAML loads the manual GEMs override layer at
+    # src/query/gems_overrides.yaml (Phase 12, Session 2 of PHASES-2). Loader
+    # lives at src/query/cohort_annotator.py:_load_gems_overrides().
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "ruff>=0.5",
+    "mypy>=1.10",
+    # drgpy is a pure-Python ICD-10 MS-DRG grouper. KG-COST uses it for FY2019 to FY2022 and as
+    # a cross-check against the Java V41.0 grouper on FY2024 MIMIC records (plan-v9.md A5).
+    # Pinned to 0.2.1 because it agrees more closely with the CMS Java grouper: on 4,090 FY2023 NTDB
+    # trauma encounters with procedure codes it gives the same MS-DRG as the Java V40.0 grouper
+    # for 95.8% to 96.6%, against 82.6% to 85.7% for drgpy 0.0.6. Each range spans two ways of
+    # choosing the principal diagnosis (alphabetically first recorded code, or random among the
+    # recorded codes), which the NTDB public use file does not record. Unlike 0.0.6, drgpy 0.2.1
+    # does not import `pkg_resources`, so no setuptools cap is needed (0.0.6 needed setuptools<80).
+    "drgpy==0.2.1",
+    # pyreadstat reads provider-level HCRIS SAS datasets (`*-hcris-data-file.zip`,
+    # FY2015+) without a SAS license. macOS-arm64 wheel bundles libreadstat C lib;
+    # no brew install needed. Added Session 9.5 for Phase 6 CCR overlay.
+    "pyreadstat>=1.2",
+    # Bolt driver consumed by src/load/run_import.py (Phase 9) for post-import
+    # sanity counts and sample queries. Optional at runtime — run_import.py
+    # degrades to a cypher-shell stub with an install hint if absent.
+    "neo4j>=5",
+    # python-dotenv loads repo-root .env at runtime so credentials and
+    # KG_COST_IMPORT_MODE override the docker-compose defaults without
+    # editing tracked files. Used by src/load/_config.py (Session 10.5).
+    "python-dotenv>=1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/samersalman/kg-cost"
+Repository = "https://github.com/samersalman/kg-cost"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

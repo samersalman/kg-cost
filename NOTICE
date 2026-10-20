@@ -1,0 +1,92 @@
+KG-COST third-party notices
+
+This file lists material that KG-COST uses or refers to and that is not covered
+by the MIT license in the LICENSE file.
+
+1. CMS and other federal public data
+
+The tables in data/gold/ are derived from files published by the Centers for
+Medicare & Medicaid Services (CMS): the IPPS final rule tables, the Medicare
+Physician Fee Schedule RVU files, the OPPS and ASC payment addenda, the Medicare
+provider utilization and payment public use files (inpatient, outpatient, and
+physician and other practitioners), and the hospital cost reports (HCRIS). The
+ICD-10-CM code lists come from the National Center for Health Statistics at the
+Centers for Disease Control and Prevention. These are U.S. federal public data.
+Where CMS no longer hosts a file, the extractors can retrieve a copy from the
+NBER mirror (data.nber.org) or the Wayback Machine. No CMS or CDC file is
+redistributed in its original form; this repository holds only derived tables.
+
+2. CPT
+
+CPT is a registered trademark of the American Medical Association. CPT code
+numbers appear in data/gold/code_costs.parquet because the CMS payment files are
+keyed by them. The gold tables contain no CPT code descriptors. Anyone who needs
+descriptors must obtain them from the American Medical Association under its
+own license.
+
+3. CMS MS-DRG Java grouper and its dependencies
+
+The CMS MS-DRG Java grouper (versions V40.0 to V43.1) is third-party software
+published by CMS. It is not distributed in this repository and is used under
+CMS's own terms. The same applies to the dependencies the grouper driver needs
+at run time, which the code downloads from their publishers and builds or
+unpacks locally: gfc-base-api (built from the source archive named in
+src/config.py), protobuf-java 3.25.5 and slf4j 1.7.36 (slf4j-api and slf4j-nop).
+Each keeps its own license. The CMS packages include a file named
+OpenSourceLicenseDisclosures.pdf that lists the third-party components bundled
+with them. See src/grouper/jars/README.md.
+
+Two gold tables are outputs of grouper software run on synthetic claims:
+data/gold/icd_principal_drg_modal.parquet and
+data/gold/icd_principal_drg_reachability.parquet. The script that builds them,
+src/transform/icd_drg.py, takes each ICD-10-CM code in the code table (built
+from the CDC code lists) as the principal diagnosis of a synthetic claim and
+groups five fixed variants of that claim: a baseline, two with one added
+secondary diagnosis, one with one added ICD-10-PCS procedure code, and one with
+sex set to male (age 65 and discharge disposition 01 throughout, with a newborn
+override for codes that begin with P). The tables record the MS-DRGs that the
+grouper returns. For fiscal years 2023 to 2026 the grouper is the CMS MS-DRG
+Java grouper (V40.0 to V43.0, the code's default version for each year). For
+fiscal years 2019 to 2022 it is the drgpy package (v36 to v39), whose package
+metadata gives its license as Apache-2.0. The inputs are code combinations, not
+patient data, and the tables contain no grouper software and no CMS grouper
+file.
+
+The Java source file src/grouper/driver/KGCostGrouperDriver.java starts with its
+own SPDX header (CC0-1.0). It is this project's own driver and calls the CMS
+grouper through its Java API. That header is left as it is.
+
+4. Python dependencies
+
+KG-COST depends on other open-source Python packages, none of which is
+redistributed here. Each is installed from PyPI and keeps its own license.
+Required: requests, lxml, pandas, pyarrow, duckdb, openpyxl, python-dateutil,
+xlrd (below version 2) and PyYAML. Optional, installed with the dev extra:
+pytest, ruff, mypy, drgpy, pyreadstat, the neo4j Python driver and
+python-dotenv. The exact requirements are in pyproject.toml.
+drgpy is a third-party pure-Python MS-DRG grouper that the code uses for fiscal
+years 2019 to 2022. Its package metadata (version 0.2.1) gives its license as
+Apache-2.0, and it keeps that license; consult it before redistributing drgpy.
+
+The optional Neo4j graph layer starts the neo4j:5.20-community Docker image with
+the APOC plugin through neo4j/docker-compose.yml. Both are pulled from their
+publishers and used under their own licenses. Nothing from them is included in
+this repository.
+
+5. Restricted data
+
+No National Trauma Data Bank (NTDB), MIMIC-IV or other restricted-access data
+are included in this repository, and none are needed to run the code. Optional
+code paths that read such data (src/query/_ntdb_adapter.py,
+src/query/run_phase14c.py, and the MIMIC-IV validation tests in
+tests/test_grouper_validation.py and tests/test_drgpy_cross.py) take the
+location of a user's own copy from an environment variable or a command-line
+argument; the MIMIC-IV tests skip when it is not set. The test fixtures under
+tests/fixtures/ are synthetic.
+
+6. Scope of the MIT license
+
+The MIT license in LICENSE covers the code in this repository and the derived
+gold tables in data/gold/, to the extent the author holds rights in them. It
+does not extend to the CMS and CDC source data, to the AMA's CPT trademark, or
+to the third-party software named above.

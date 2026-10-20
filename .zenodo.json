@@ -1,0 +1,26 @@
+{
+  "title": "KG-COST: an open-source pipeline that assigns MS-DRGs to ICD-10-CM/PCS-coded encounters and estimates Medicare-allowed payments",
+  "upload_type": "software",
+  "description": "KG-COST assigns an MS-DRG to ICD-10-CM/PCS-coded encounters with an MS-DRG grouper and returns the Medicare payment amount that CMS public files give for that DRG in the encounter's fiscal year, together with a confidence tier (high, approximate or none) that records how the DRG was obtained. It also returns payment amounts for CPT and HCPCS codes from the Medicare physician fee schedule, hospital outpatient and ambulatory surgical center files. Amounts are nominal dollars taken or derived from CMS public files, not hospital charges or costs, and the repository ships three derived lookup tables and no patient-level data.",
+  "creators": [
+    {
+      "name": "Salman, Samer G.",
+      "affiliation": "Baylor College of Medicine"
+    }
+  ],
+  "license": "mit",
+  "version": "0.1.0",
+  "access_right": "open",
+  "keywords": [
+    "MS-DRG",
+    "Medicare",
+    "ICD-10",
+    "ICD-10-CM",
+    "ICD-10-PCS",
+    "health economics",
+    "trauma",
+    "cost estimation",
+    "Medicare payments",
+    "knowledge graph"
+  ]
+}

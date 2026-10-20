@@ -1,0 +1,45 @@
+# Secrets
+.env
+
+# Python bytecode and caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# OS files
+.DS_Store
+
+# Runtime output and scratch space
+logs/
+scratch/
+
+# Data layers: only the three gold tables and data/README.md are tracked.
+# Bronze, silver, derived and Neo4j import files are rebuilt locally and are
+# never committed (derived files can hold restricted-data rows).
+data/*
+!data/gold/
+!data/README.md
+
+# Neo4j local volumes
+neo4j/data/
+neo4j/logs/
+neo4j/plugins/
+
+# MS-DRG grouper: CMS JARs and the locally built pieces are not redistributed.
+# src/grouper/jars/README.md stays tracked (it is a file, not a directory).
+src/grouper/jars/*/
+src/grouper/vendor/
+src/grouper/driver/_classes/
+*.jar
+*.class

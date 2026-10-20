@@ -1,0 +1,30 @@
+# src/query/gems_overrides.yaml
+# Manual ICD-9-CM -> ICD-10-CM override layer for cohort_annotator GEMs bridge.
+#
+# Format
+# ------
+# Top-level mappings (preferred for general use):
+#   <icd9_code>: <icd10_code>
+# Section-grouped (curation provenance -- flattened on load):
+#   <section_name>:
+#     <icd9_code>: <icd10_code>
+#
+# Both forms are merged into a single flat dict {icd9 -> icd10} by the loader.
+# Section names carry no semantics at lookup time; they exist only to group
+# entries by curation provenance (e.g. trauma, oncology, sepsis).
+#
+# Loader: src/query/cohort_annotator.py:_load_gems_overrides()
+# Effect: when a cohort row carries an ICD-9-CM code, the override is consulted
+# BEFORE the 6-tier GEMs disambiguation logic. If the source code is present
+# here, the mapped ICD-10-CM target is returned directly (single-target path,
+# tier "override"). Otherwise the GEMs tier ladder runs as usual.
+#
+# Default this session: file ships empty; loader returns {}.
+#
+# References / curation provenance go here as YAML comments. Each override
+# entry SHOULD be accompanied by a citation (CMS GEMs erratum, ICD-10-CM
+# tabular index, clinical-coding guideline, etc.) in a comment immediately
+# above the entry. TODO: populate during Phase 14 (NTDB integration).
+
+# --- Trauma-specific overrides (Phase 14 NTDB integration; deferred) ---
+trauma: {}

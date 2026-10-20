@@ -1,0 +1,48 @@
+# Neo4j 5.x Community harness for KG-COST.
+#
+# Run from the project root:
+#   docker compose -f neo4j/docker-compose.yml up -d
+#   docker compose -f neo4j/docker-compose.yml logs -f neo4j
+#   docker compose -f neo4j/docker-compose.yml down
+#
+# Volumes are mounted relative to this compose file (i.e. the `neo4j/`
+# directory). The import dir is mounted from the project-root
+# `data/neo4j_import/` tree so `build_csvs.py` can drop CSVs there and the
+# bulk-import shell can reference them as `/var/lib/neo4j/import/*.csv` from
+# inside the container.
+
+services:
+  neo4j:
+    image: neo4j:5.20-community
+    container_name: kgcost-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474"  # HTTP / Browser
+      - "7687:7687"  # Bolt
+    environment:
+      # Local-only credentials. NOT for production. Rotate before any
+      # remote-accessible deployment.
+      NEO4J_AUTH: neo4j/kgcostlocal
+      # Auto-install APOC core on first boot.
+      NEO4J_PLUGINS: '["apoc"]'
+    volumes:
+      - ./data:/data
+      - ./logs:/logs
+      - ./plugins:/plugins
+      - ./conf:/conf
+      # Project-root data/neo4j_import/ surfaces inside the container as
+      # /var/lib/neo4j/import. build_csvs.py writes here; neo4j_import.sh
+      # reads from /var/lib/neo4j/import/*.csv.
+      - ../data/neo4j_import:/var/lib/neo4j/import
+      # Project-root src/load/ surfaces as /cypher (read-only) so
+      # post_load.cypher can `:source /cypher/schema.cypher` and
+      # neo4j_import.sh can run `cypher-shell -f /cypher/post_load.cypher`
+      # without copying files into the container.
+      - ../src/load:/cypher:ro
+    healthcheck:
+      # cypher-shell ping against bolt; returns 0 once Neo4j is bindable.
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p kgcostlocal 'RETURN 1' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
